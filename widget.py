@@ -171,10 +171,10 @@ class CalendarWidget(Gtk.Window):
         cr.set_operator(cairo.OPERATOR_OVER)
         return False
 
-    def place(self):
+    def place(self, position=None):
         monitor = Gdk.Display.get_default().get_primary_monitor() or Gdk.Display.get_default().get_monitor(0)
         rect = monitor.get_geometry()
-        pos = read_json(POSITION)
+        pos = read_json(POSITION) if position is None else position
         width, height = self.get_size()
         x = max(rect.x, min(int(pos.get('x', rect.x+rect.width-width-24)), rect.x+rect.width-width))
         y = max(rect.y+36, min(int(pos.get('y', rect.y+70)), rect.y+rect.height-height-24))
@@ -240,13 +240,21 @@ class CalendarWidget(Gtk.Window):
 
     def save_geometry(self):
         x, y = self.get_position(); width, height = self.get_size()
-        write_private(POSITION, {'x': x, 'y': y, 'width': width, 'height': height})
+        saved = read_json(POSITION)
+        saved.update(x=x, y=y, width=width, height=height)
+        write_private(POSITION, saved)
         return False
 
+    def set_position(self):
+        self.save_geometry()
+        saved = read_json(POSITION)
+        saved['preferred_position'] = {'x': saved['x'], 'y': saved['y']}
+        write_private(POSITION, saved)
+        self.status.set_text('Position saved')
+
     def reset_position(self):
-        width, height = self.get_size()
-        write_private(POSITION, {'width': width, 'height': height})
-        self.place()
+        self.place(read_json(POSITION).get('preferred_position', {}))
+        GLib.timeout_add(150, self.save_geometry)
 
     def drag_start(self, _widget, event):
         if event.button == 1:
@@ -361,6 +369,7 @@ class CalendarWidget(Gtk.Window):
         menu.get_style_context().add_class('calendar-menu')
         for text, callback in [('Refresh', self.refresh), ('Open Google Calendar', self.open_calendar),
                                ('Unscheduled tasks', self.show_undated),
+                               ('Set position', self.set_position),
                                ('Reset position', self.reset_position),
                                ('Quit widget', Gtk.main_quit)]:
             item = Gtk.MenuItem(label=text); item.connect('activate', lambda _, fn=callback: fn()); menu.append(item)
