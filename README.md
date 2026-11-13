@@ -8,6 +8,7 @@ A private, read-only GTK3 calendar on the XFCE/X11 wallpaper, below application 
 - Blue underlines mark dates containing events or tasks. Completed tasks have a check mark.
 - Use the three-dot menu → **Unscheduled tasks** for pending tasks without a due date. Click a day to return to its agenda.
 - Drag the date heading to move the widget. Choose **Set position** in the three-dot menu to save a preferred location. **Reset position** returns there after any later move, keeping the current size. Choose **Set position** again to replace that location. Until a preferred location is saved, Reset returns to the default top-right position.
+- Saved positions use exact coordinates, including near screen edges. A position is recovered onto the current display only if the widget would be completely off all connected displays.
 - Drag any edge or corner to resize it, like a desktop application. The pointer changes to a resize arrow at the border. Size and position are remembered across restarts; the agenda scrolls when the widget is short.
 - **Today** returns to today's date. The arrows browse months; the selected day stays selected until you click another date.
 - The refresh button syncs immediately; the arrow opens Google Calendar for the configured account.

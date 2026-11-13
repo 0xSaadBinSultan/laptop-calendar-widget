@@ -172,12 +172,20 @@ class CalendarWidget(Gtk.Window):
         return False
 
     def place(self, position=None):
-        monitor = Gdk.Display.get_default().get_primary_monitor() or Gdk.Display.get_default().get_monitor(0)
+        display = Gdk.Display.get_default()
+        monitor = display.get_primary_monitor() or display.get_monitor(0)
         rect = monitor.get_geometry()
         pos = read_json(POSITION) if position is None else position
         width, height = self.get_size()
-        x = max(rect.x, min(int(pos.get('x', rect.x+rect.width-width-24)), rect.x+rect.width-width))
-        y = max(rect.y+36, min(int(pos.get('y', rect.y+70)), rect.y+rect.height-height-24))
+        default_x, default_y = rect.x+max(0, rect.width-width-24), rect.y+70
+        x, y = int(pos.get('x', default_x)), int(pos.get('y', default_y))
+        # A saved position is an exact anchor, including near a screen edge.
+        # Resizing the widget must not silently shift that anchor inward.
+        # Recover only when no part of the window intersects any display.
+        screens = [display.get_monitor(i).get_geometry() for i in range(display.get_n_monitors())]
+        if not any(x < r.x+r.width and x+width > r.x and
+                   y < r.y+r.height and y+height > r.y for r in screens):
+            x, y = default_x, default_y
         self.move(x, y)
         return False
 
