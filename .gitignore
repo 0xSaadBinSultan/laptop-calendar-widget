@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+config.json
+client.json
+client_secret*.json
+oauth*.json
+events.json
+authorization.json
+position.json
+*.log
+*.png
+*.jpg
+*.tar.gz

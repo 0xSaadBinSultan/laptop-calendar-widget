@@ -1,0 +1,7 @@
+{
+  "account": "you@example.com",
+  "timezone": "UTC",
+  "refresh_minutes": 5,
+  "width": 340,
+  "opacity": 0.93
+}
