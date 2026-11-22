@@ -13,3 +13,17 @@ position.json
 *.png
 *.jpg
 *.tar.gz
+
+# Portable builds and local development
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+build/
+dist/
+*.spec
+.DS_Store
+Thumbs.db
+
+!docs/
+!docs/*.png

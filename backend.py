@@ -7,18 +7,19 @@ import os
 import tempfile
 import urllib.parse
 import urllib.request
+from app_paths import CONFIG_DIR, CACHE_DIR
 
 from icalendar import Calendar
 import recurring_ical_events
 
-CONFIG = Path.home()/'.config/laptop-calendar/config.json'
-CACHE = Path.home()/'.cache/laptop-calendar/events.json'
-POSITION = Path.home()/'.config/laptop-calendar/position.json'
+CONFIG = CONFIG_DIR / 'config.json'
+CACHE = CACHE_DIR / 'events.json'
+POSITION = CONFIG_DIR / 'position.json'
 HOSTS = {'calendar.google.com', 'calendar.googleusercontent.com'}
 
 def read_json(path, default=None):
     try:
-        return json.loads(path.read_text())
+        return json.loads(path.read_text(encoding='utf-8'))
     except (OSError, ValueError):
         return default if default is not None else {}
 
@@ -26,7 +27,7 @@ def write_private(path, data):
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     fd, name = tempfile.mkstemp(prefix='.calendar-', dir=path.parent)
     try:
-        with os.fdopen(fd, 'w') as out:
+        with os.fdopen(fd, 'w', encoding='utf-8') as out:
             json.dump(data, out, ensure_ascii=False, indent=2)
         Path(name).replace(path)
     finally:

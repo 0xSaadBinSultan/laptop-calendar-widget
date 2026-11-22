@@ -66,7 +66,9 @@ class CalendarTests(unittest.TestCase):
             with patch.object(backend,'CACHE',path),patch.object(backend,'fetch_feed',side_effect=OSError('offline')):
                 with self.assertRaises(OSError):backend.synchronize({'timezone':'America/New_York','calendars':[{'url':'unused'}]})
             self.assertEqual(path.read_bytes(),before)
-            self.assertEqual(path.stat().st_mode & 0o777,0o600)
+            import os
+            if os.name == 'posix':
+                self.assertEqual(path.stat().st_mode & 0o777,0o600)
 
     def test_google_task_due_date_is_not_shifted(self):
         from google_api import normalize_task

@@ -7,6 +7,8 @@ import subprocess
 import sys
 import json
 
+if sys.platform != 'linux':
+    raise SystemExit('This installer is for Linux/XFCE. On Windows/macOS use python desktop.py; see README.md.')
 if os.geteuid() == 0: raise SystemExit('Run as your desktop user, not root.')
 source = Path(__file__).resolve().parent
 home = Path.home()
@@ -18,7 +20,7 @@ config = config_dir/'config.json'
 if not config.exists():
     with os.fdopen(os.open(config, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as out:
         json.dump(json.loads((source/'config.example.json').read_text()), out, indent=2)
-for name in ['backend.py', 'widget.py', 'google_api.py', 'connect_google.py', 'requirements.txt']:
+for name in ['backend.py', 'app_paths.py', 'widget.py', 'google_api.py', 'connect_google.py', 'requirements.txt']:
     shutil.copy2(source/name, target/name)
 python = target/'.venv/bin/python'
 if not python.exists():

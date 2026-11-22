@@ -8,17 +8,14 @@ import time
 from google_auth_oauthlib.flow import InstalledAppFlow
 from backend import CONFIG, read_json, write_private
 from google_api import TOKEN, SCOPES, calendar_list, task_lists
+from app_paths import STATE_DIR
 
-PENDING = Path.home()/'.local/state/laptop-calendar/authorization.json'
+PENDING = STATE_DIR / 'authorization.json'
 
-def main():
+def main(open_browser=None):
     cfg = read_json(CONFIG)
-    path = Path(cfg.get('oauth_client', '~/.config/laptop-calendar/client.json')).expanduser()
-    # Compatibility with the existing laptop installation. New users supply
-    # their own client.json; no client credentials are shipped with the app.
-    legacy = Path.home()/'.config/rclone/laptop-backup-client.json'
-    if not path.exists() and 'oauth_client' not in cfg and legacy.exists(): path = legacy
-    client = json.loads(path.read_text())['installed']
+    path = Path(cfg.get('oauth_client', str(CONFIG.parent / 'client.json'))).expanduser()
+    client = json.loads(path.read_text(encoding='utf-8'))['installed']
     desktop = {'installed': {**client, 'auth_uri': 'https://accounts.google.com/o/oauth2/v2/auth',
                             'token_uri': 'https://oauth2.googleapis.com/token',
                             'redirect_uris': ['http://localhost']}}
@@ -29,7 +26,8 @@ def main():
         write_private(PENDING, {'url': url, 'started': time.time()})
         return url, state
     flow.authorization_url = record
-    creds = flow.run_local_server(host='127.0.0.1', port=0, open_browser='--open-browser' in sys.argv,
+    creds = flow.run_local_server(host='127.0.0.1', port=0,
+                                  open_browser=('--open-browser' in sys.argv if open_browser is None else open_browser),
                                   authorization_prompt_message='', timeout_seconds=1200,
                                   success_message='Google authorization received. You can return to your desktop.',
                                   access_type='offline', prompt='consent',
@@ -37,13 +35,15 @@ def main():
     if not creds.has_scopes(SCOPES): raise RuntimeError('Both read-only permissions are required')
     calendars = calendar_list(creds.token)
     primary = next(c for c in calendars if c.get('primary'))
-    if primary['id'].casefold() != cfg['account'].casefold():
+    expected = cfg.get('account', '')
+    if expected and expected != 'you@example.com' and primary['id'].casefold() != expected.casefold():
         raise RuntimeError('The selected Google account is different; existing connection preserved')
     task_lists(creds.token)
     write_private(TOKEN, json.loads(creds.to_json()))
+    cfg['account'] = primary['id']
     cfg['source'] = 'google_api'; write_private(CONFIG, cfg)
     write_private(PENDING, {'completed': True, 'finished': time.time()})
-    print('Calendar and Tasks read-only access verified. Backup credentials were not modified.')
+    print('Calendar and Tasks read-only access verified.')
 
 if __name__ == '__main__':
     try: main()

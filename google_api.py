@@ -11,7 +11,7 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from backend import CONFIG, CACHE, read_json, write_private, event_bounds
 
-TOKEN = Path.home()/'.config/laptop-calendar/oauth.json'
+TOKEN = CONFIG.parent / 'oauth.json'
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly',
           'https://www.googleapis.com/auth/tasks.readonly']
 CALENDAR = 'https://www.googleapis.com/calendar/v3/'

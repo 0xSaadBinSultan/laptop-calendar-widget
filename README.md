@@ -1,69 +1,113 @@
 # Desktop Calendar
 
-A private, read-only GTK3 calendar on the XFCE/X11 wallpaper, below application windows. It starts when you sign in and refreshes every five minutes. Includes Google Calendar events, Google Tasks, a dark translucent panel and mouse resizing.
+[![Build checks](https://github.com/0xSaadBinSultan/laptop-calendar-widget/actions/workflows/desktop.yml/badge.svg)](https://github.com/0xSaadBinSultan/laptop-calendar-widget/actions/workflows/desktop.yml)
 
-## Use
+A read-only Google Calendar and Tasks desktop companion. Browse your month,
+view the day's agenda, and keep the last successful sync available offline.
 
-- Click a day to see that day's events and dated Google Tasks. Scroll the agenda when necessary.
-- Blue underlines mark dates containing events or tasks. Completed tasks have a check mark.
-- Use the three-dot menu → **Unscheduled tasks** for pending tasks without a due date. Click a day to return to its agenda.
-- Drag the date heading to move the widget. Choose **Set position** in the three-dot menu to save a preferred location. **Reset position** returns there after any later move, keeping the current size. Choose **Set position** again to replace that location. Until a preferred location is saved, Reset returns to the default top-right position.
-- Saved positions use exact coordinates, including near screen edges. A position is recovered onto the current display only if the widget would be completely off all connected displays.
-- Drag any edge or corner to resize it, like a desktop application. The pointer changes to a resize arrow at the border. Size and position are remembered across restarts; the agenda scrolls when the widget is short.
-- **Today** returns to today's date. The arrows browse months; the selected day stays selected until you click another date.
-- The refresh button syncs immediately; the arrow opens Google Calendar for the configured account.
-- Make changes in Google Calendar or Google Tasks. This widget has no write permissions.
+**Windows, macOS and Linux:** portable Qt desktop app with native window movement,
+resizing, adjustable transparency and Google connection settings.
+**XFCE/X11:** the original GTK wallpaper widget is also available.
 
-Set `timezone` in your private config to the IANA time zone you use in Google Calendar, such as `Europe/London`. A Google Tasks due date stays on its calendar date rather than being shifted by a time zone conversion. The footer's sync time uses the laptop's local time zone.
+![Portable calendar with synthetic example events](docs/desktop-preview.png)
 
-## Data and limitations
+## Choose your version
 
-The Google backend reads the primary and selected visible calendars, plus all task lists. It fetches expanded events from 62 days ago through 370 days ahead. Tasks without dates appear separately. Repeating tasks are limited to the instances Google exposes through its Tasks API; the widget does not invent future occurrences. Calendar selections are refreshed on the next sync. Calendars shared with availability-only access display **Busy**, as defined by Google's [free/busy API](https://developers.google.com/workspace/calendar/api/v3/reference/freebusy/query).
+| Platform | Interface | Setup |
+| --- | --- | --- |
+| Windows 10/11, x64 | Qt desktop app | Python setup below, or a successful Windows Actions build |
+| macOS 14+, Apple Silicon / Intel | Qt desktop app | Python setup below; Actions builds target Apple Silicon |
+| Linux x64, X11 or Wayland | Qt desktop app | Python setup below; normal application window |
+| Debian/Kali XFCE, X11 | GTK wallpaper widget | [Original XFCE setup](docs/xfce.md) |
 
-If the network or API fails, the last successful private cache remains visible with an offline indicator. The widget does not publish calendars or change existing backup credentials.
+Qt's normal desktop window is deliberately independent of window-manager desktop
+layer extensions. Wayland and macOS do not promise XFCE-style wallpaper pinning.
+ARM Linux depends on availability of Qt wheels and has no CI runner here. No mobile
+Android/iOS app is included. See Actions for actual OS build results, not just this table.
 
-Private configuration, OAuth credentials and cache are stored in `~/.config/laptop-calendar`, `~/.local/state/laptop-calendar`, and `~/.cache/laptop-calendar`. Treat these as sensitive. They are intentionally outside this source package. Revoke access through your Google Account's third-party connections if you no longer want it.
+## Install and run
 
-## Commands
+Install Python **3.11 or 3.12** from [python.org](https://www.python.org/downloads/),
+then clone or download this repository. No administrator access is required by the helper.
 
-```bash
-laptop-calendar             # Start the widget
-laptop-calendar --status    # Cached sync summary; no event titles
-laptop-calendar --check     # Perform a sync and print counts
-laptop-calendar --connect   # Authorize your own Google account
-systemctl --user restart laptop-calendar-widget.service
-systemctl --user stop laptop-calendar-widget.service
+```sh
+git clone https://github.com/0xSaadBinSultan/laptop-calendar-widget.git
+cd laptop-calendar-widget
+python install_desktop.py --run
 ```
 
-To stop it appearing after login, set `Hidden=true` in `~/.config/autostart/laptop-calendar-widget.desktop`. Stopping the service alone affects only the current session.
+On macOS/Linux, use `python3` if `python` is unavailable. On Windows, `py -3.12`
+can replace `python`. The helper creates `.venv` inside this checkout and installs
+only its Python dependencies. Rerun the same command to launch again.
+To preview without a Google account or network:
 
-## Install on Debian/Kali XFCE
-
-Install the desktop dependencies if they are missing:
-
-```bash
-sudo apt update
-sudo apt install --no-remove python3 python3-venv python3-gi python3-gi-cairo gir1.2-gtk-3.0
+```sh
+python install_desktop.py --run --demo
 ```
 
-Run as the desktop user, without sudo:
+For a manually managed environment:
 
-```bash
-python3 /path/to/calendar-widget/install.py
+```sh
+python -m pip install -r requirements-desktop.txt
+python desktop.py
 ```
 
-The installer creates a private Python environment, copies the source, and installs the user service and XFCE autostart entry. It expects Debian's Python venv, GTK3, PyGObject and Cairo packages to exist. It does not run an operating-system upgrade. The service assumes the existing X11 display `:0`; adjust DISPLAY and XAUTHORITY for another desktop session.
+## Connect your Google account
 
-Existing private configuration is preserved. For a fresh installation:
+1. In your own Google Cloud project, enable **Google Calendar API** and **Google Tasks API**.
+2. Configure the OAuth consent screen. If it is in Testing, add your Google account as a test user.
+3. Create an OAuth client with application type **Desktop app** and download its JSON.
+4. Open the calendar's **Settings**, choose that JSON, and set an IANA timezone
+   such as `Asia/Dhaka`. The account field is optional; set it to enforce a specific account.
+5. Click **Connect Google** and review the Calendar/Tasks read-only permissions
+   in your browser. Keep the app open until the connection finishes.
 
-1. Edit `~/.config/laptop-calendar/config.json` and replace the placeholder account and time zone.
-2. In your own Google Cloud project, enable Google Calendar API and Google Tasks API. Configure its OAuth consent screen and add your account as a test user if the app is in Testing.
-3. Create a **Desktop app** OAuth client and save its downloaded JSON as `~/.config/laptop-calendar/client.json`. Keep it private with `chmod 600 ~/.config/laptop-calendar/client.json`.
-4. Run `laptop-calendar --connect`, review the permissions in your browser and approve only if you agree. Leave the terminal running until authorization finishes.
-5. Run `laptop-calendar --check`, then `laptop-calendar`.
+The app saves its own refresh token after account verification. It never requests
+calendar editing or Tasks editing permissions. Access can be revoked through your
+Google Account. Google controls consent, quotas and refresh-token lifetime; external
+Testing apps can require reconnecting. See the [OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app).
 
-The connector requests only Calendar and Tasks read-only scopes. It switches to the Google backend only after verifying both permissions and the expected account. Refresh tokens for external apps in Testing can expire after seven days; reconnect or configure your own consent setup appropriately for continued personal use. See Google's [OAuth consent guide](https://developers.google.com/workspace/guides/configure-oauth-consent) and [token expiration documentation](https://developers.google.com/identity/protocols/oauth2#expiration).
+## Controls
 
-Your Google account, client credentials, tokens, private feed URLs and calendar cache are **never part of the public source**. Each installation connects to its own account; there is no shared API key or hosted service. Do not commit your private config directory. The connector does not need a GitHub token.
+- Select a day for its events and dated tasks; marked days contain cached items.
+- **Unscheduled tasks** shows tasks without due dates. Completed dated tasks remain marked.
+- **Today** uses the calendar timezone. Google Tasks due dates are not shifted across timezones.
+- **Refresh** synchronizes in a background worker; failed requests preserve the previous cache.
+- Drag the native title bar and resize the borders. Window geometry is remembered.
+- Change opacity in Settings. Closing the window exits this app; it does not hide in a tray.
 
-The older private iCal backend remains available for existing installations, but cannot supply Google Tasks. No credentials are included in this directory.
+Selected visible Google calendars and task lists are read from 62 days ago through
+370 days ahead. Availability-only calendars display Busy. Repeating tasks are limited
+to instances Google exposes; no future tasks are invented.
+
+## Private storage
+
+| OS | Configuration and OAuth token | Cache |
+| --- | --- | --- |
+| Windows | `%APPDATA%/LaptopCalendar` | `%LOCALAPPDATA%/LaptopCalendar/Cache` |
+| macOS | `~/Library/Application Support/LaptopCalendar` | `~/Library/Caches/LaptopCalendar` |
+| Linux | `~/.config/laptop-calendar` | `~/.cache/laptop-calendar` |
+
+Linux respects XDG directory overrides. `LAPTOP_CALENDAR_HOME` redirects config,
+cache and state beneath one directory for isolated testing or portable setups.
+`python desktop.py --paths` prints locations. Token and cache files are created
+atomically with owner-only POSIX permissions; Windows uses the user's inherited ACLs.
+Keep these directories and the downloaded OAuth JSON out of Git and public screenshots.
+No shared key, Google credentials, private events or hosted backend ship in the app.
+
+## Test and build
+
+```sh
+python -m unittest -v test_calendar test_portable
+python -m pip install pyinstaller
+python -m PyInstaller --noconfirm --clean --onedir --windowed --name DesktopCalendar desktop.py
+```
+
+Headless checks use `QT_QPA_PLATFORM=offscreen` and synthetic data. GitHub Actions
+runs tests and creates OS-specific artifacts on Windows x64, Linux x64 and macOS
+Apple Silicon. Build on the target OS; PyInstaller does not cross-compile.
+These are unsigned application builds, not notarized macOS packages or signed
+Windows installers. Dependencies retain their own licenses, including Qt/PySide's
+applicable LGPL/commercial terms. The original application source is [MIT](LICENSE).
+
+Previews can be regenerated with `python desktop.py --demo --export-preview docs/desktop-preview.png`.
