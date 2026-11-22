@@ -80,6 +80,18 @@ Selected visible Google calendars and task lists are read from 62 days ago throu
 370 days ahead. Availability-only calendars display Busy. Repeating tasks are limited
 to instances Google exposes; no future tasks are invented.
 
+## Linux runtime libraries
+
+Qt still needs the operating system's graphics and font libraries, including for
+headless rendering. On Debian/Ubuntu/Kali desktops that lack them:
+
+```sh
+sudo apt install libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 fonts-dejavu-core
+```
+
+Use your distribution's equivalent packages on other Linux systems. A standalone
+build includes Python/Qt, but is not a fully static binary or a mobile application.
+
 ## Private storage
 
 | OS | Configuration and OAuth token | Cache |
