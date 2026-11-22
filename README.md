@@ -1,5 +1,7 @@
 # Desktop Calendar
 
+[Download desktop releases](https://github.com/0xSaadBinSultan/laptop-calendar-widget/releases/latest)
+
 [![Build checks](https://github.com/0xSaadBinSultan/laptop-calendar-widget/actions/workflows/desktop.yml/badge.svg)](https://github.com/0xSaadBinSultan/laptop-calendar-widget/actions/workflows/desktop.yml)
 
 A read-only Google Calendar and Tasks desktop companion. Browse your month,
@@ -123,3 +125,10 @@ Windows installers. Dependencies retain their own licenses, including Qt/PySide'
 applicable LGPL/commercial terms. The original application source is [MIT](LICENSE).
 
 Previews can be regenerated with `python desktop.py --demo --export-preview docs/desktop-preview.png`.
+
+Maintainers can publish a verified build through **Actions → Publish tested desktop
+release → Run workflow**. Supply a new semantic version and the successful desktop
+build run ID. The release helper verifies the source branch and workflow, reuses
+those exact artifacts, and publishes SHA-256 checksums without replacing old releases.
+
+For redistributed standalone builds, run `python bundle_notices.py dist` before archiving. See [third-party notices](THIRD_PARTY.md).
