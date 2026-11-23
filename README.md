@@ -27,6 +27,23 @@ layer extensions. Wayland and macOS do not promise XFCE-style wallpaper pinning.
 ARM Linux depends on availability of Qt wheels and has no CI runner here. No mobile
 Android/iOS app is included. See Actions for actual OS build results, not just this table.
 
+## Run a downloaded release
+
+Download the archive for your computer from **Releases**, then extract it:
+
+| Download | Open after extraction |
+| --- | --- |
+| `desktop-Windows-AMD64.tar.gz` | `DesktopCalendar/DesktopCalendar.exe` |
+| `desktop-Darwin-arm64.tar.gz` | `DesktopCalendar.app` on an Apple Silicon Mac |
+| `desktop-Linux-x86_64.tar.gz` | `DesktopCalendar/DesktopCalendar` |
+
+Python and Qt are included. Keep the complete extracted folder together, including
+its internal libraries and third-party notices. Linux still needs the graphics
+libraries listed below. Intel Mac users can use the Python source setup instead.
+Release checksums are in `SHA256SUMS`; the app builds are unsigned and not notarized.
+
+Your own Google Desktop OAuth client is still required to connect a calendar.
+
 ## Install and run
 
 Install Python **3.11 or 3.12** from [python.org](https://www.python.org/downloads/),
